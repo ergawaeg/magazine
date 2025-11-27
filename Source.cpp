@@ -12,10 +12,27 @@ std::string userstatus[3]{ "супер админ","админ","сотрудник" };
 std::string* loginarr = new std::string[usize]{ "superadmin", "admin", "user" };
 std::string* passwordarr = new std::string[usize]{ "superadmin", "admin", "user" };
 std::string* statusarr = new std::string[usize]{ userstatus[0], userstatus[1], userstatus[2] };
+double* bonusarr = new double[usize] {0.0, 0.0, 0.0};
+unsigned int* useridarr = new unsigned int[usize] {1, 2, 3};
+unsigned int currentid = 0;
 std::string currentstatus;
 void Changeuser();
+//продажи
+size_t checksize = 0;
+int* idarrcheck;
+std::string* namearrcheck;
+unsigned int* countarrcheck;
+double* pricearrcheck;
+double* totalpricearrcheck;
+double cashincome = 0.0;
+double bankincome = 0.0;
+double cash = 3000 + rand() % 7500;
+void Selling();
+void Checkarrappend();
+void Printcheck(double& totalsum);
+void Storagereturn();
 //служебки
-std::string choose, choosecount, chooseid;
+std::string choose, choosecount, chooseid, choosemoney;
 std::unordered_set<char> loginsymbols;
 std::unordered_set<char> passsymbols;
 void Setloginsymbols();
@@ -79,7 +96,7 @@ void Createstorage()
 	Fillarr(pricearr, price, statsize);
 	if (isstoragecreated == false)
 	{
-		delete[]idarr, namearr, pricearr;
+		delete[]idarr; namearr; pricearr;
 	}
 }
 
@@ -111,6 +128,7 @@ bool Login()
 				system("cls");
 				std::cout << "статус - " << statusarr[i] << "\n\n";
 				currentstatus = statusarr[i];
+				currentid = useridarr[i];
 				return true;
 			}
 		}
@@ -137,7 +155,7 @@ void Sadminmenu()
 		system("cls");
 		if (choose == "1" && storagesize > 0)
 		{
-
+			Selling();
 		}
 		else if (choose == "2" && storagesize > 0)
 		{
@@ -197,7 +215,90 @@ void Deleteuser()
 			Sleep(1500);
 			break;
 		}
-		//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+		Showuser();
+		std::cout << "\nвеберете номер/exit";
+		Getline(choose);
+		if (choose == "exit")
+		{
+			std::cout << "отмена";
+			Sleep(1500);
+			break;
+		}
+		else if (Isnumber(choose))
+		{
+			userid = std::stoi(choose);
+			if (userid < isadmin || userid > usize - 1)
+			{
+				std::cout << "пользователя с таким номером нет\n";
+				Sleep(1500);
+				break;
+			}
+			while (true)
+			{
+				system("cls");
+				if (currentstatus == userstatus[1] && statusarr[userid] == userstatus[1])
+				{
+					std::cout << "нельзя";
+					Sleep(1500);
+					break;
+				}
+				std::cout << "удoление пользователя - " << loginarr[userid] << "\n";
+				std::cout << "для подтверждения введите пароль С админа/exit";
+				Getline(checkpass);
+				if (checkpass == "exit")
+				{
+					std::cout << "отмена";
+					Sleep(1500);
+					break;
+				}
+				else if (checkpass == passwordarr[0])
+				{
+					usize--;
+					if (statusarr[userid] == userstatus[2])
+					{
+						staffcount--;
+					}
+					std::string* loginarrtemp = new std::string[usize];
+					std::string* passarrtemp = new std::string[usize];
+					std::string* rolearrtemp = new std::string[usize];
+					double* bonusarrtemp = new double[usize];
+					unsigned int* useridarrtemp = new unsigned int[usize];
+
+					for (size_t i = 0, c = 0; i < usize; i++, c++)
+					{
+						if (userid == c)
+						{
+							c++;
+						}
+						loginarrtemp[i] = loginarr[c];
+						passarrtemp[i] = passwordarr[c];
+						rolearrtemp[i] = statusarr[c];
+						bonusarrtemp[i] = bonusarr[c];
+						useridarrtemp[i] = i + 1;
+					}
+
+					std::swap(loginarrtemp, loginarr);
+					std::swap(passarrtemp, passwordarr);
+					std::swap(rolearrtemp, statusarr);
+					std::swap(bonusarrtemp, bonusarr);
+					std::swap(useridarrtemp, useridarr);
+
+					delete[] loginarrtemp; passarrtemp; rolearrtemp; bonusarrtemp; useridarrtemp;
+
+					std::cout << "операция прошла успешно";
+					Sleep(1500);
+					break;
+				}
+				else
+				{
+					Err();
+				}
+			}
+		}
+		else
+		{
+			Err();
+		}
 	}
 }
 void Addnewitem()
@@ -328,7 +429,7 @@ void Addnewitem()
 				std::swap(countarr, countarrtemp);
 				std::swap(pricearr, pricearrtemp);
 
-				delete[] idarrtemp, namearrtemp, countarrtemp, pricearrtemp;
+				delete[] idarrtemp; namearrtemp; countarrtemp; pricearrtemp;
 				break;
 			}
 			else if (choose == "2")
@@ -348,6 +449,159 @@ void Addnewitem()
 
 }
 
+
+void Selling()
+{
+	bool isfirst = true;
+	unsigned id = 0, count = 0;
+	int index = -1;
+	double money = 0.0, totalsum = 0.0;
+	while (true)
+	{
+		Showstorage();
+		std::cout << "введите номер товара/exit для перехода к оплате\n";
+		Getline(choose);
+		if (choose == "exit")
+		{
+			if (isfirst)
+			{
+				break;
+			}
+			Printcheck(totalsum);
+			std::cout << "\nподтверлить 1 - да 2 - нет 3 - отмена\n";
+			Getline(choose);
+			if (choose == "1")
+			{
+				while (true)
+				{
+					system("cls");
+					std::cout << "выберете способ оплаты 1 - наличка 2 - безнал\n";
+					Getline(choose);
+					if (choose == "1")
+					{
+						//////////////////////////////////////////////////
+					}
+					else if (choose == "2")
+					{
+						std::cout << "приложите карту";
+						system("pause");
+						std::cout << "успешно";
+						Sleep(1500);
+						bankincome += totalsum;
+						bonusarr[currentid] = totalsum;
+					}
+				}
+				delete[] idarrcheck; namearrcheck; countarrcheck; pricearrcheck; totalpricearrcheck;
+			}
+			else if (choose == "2")
+			{
+				continue;
+			}
+			else if (choose == "3")
+			{
+				std::cout << "отмена";
+				Storagereturn();
+				Sleep(1500);
+				system("cls");
+				return;
+			}
+			else
+			{
+				Err();
+				continue;
+			}
+			system("pause");
+		}
+		if (Isnumber(choose))
+		{
+			id = std::stoi(choose) - 1;
+			if (id < 0 || id > storagesize - 1)
+			{
+				std::cout << "ошибка";
+				Sleep(1500);
+				continue;
+			}
+		}
+		else
+		{
+			continue;
+		}
+		std::cout << "\nвведите кол-во товара/exit\n";
+		Getline(choose);
+		if (choose == "exit")
+		{
+			std::cout << "отмена";
+			Sleep(1500);
+		}
+		if (Isnumber(choose))
+		{
+			id = std::stoi(choose);
+			if (count < 1 || count > countarr[id])
+			{
+				std::cout << "ошибка";
+				Sleep(1500);
+				continue;
+			}
+		}
+		else
+		{
+			continue;
+		}
+		Checkarrappend();
+		if (!isfirst)
+		{
+			isfirst = true;
+		}
+		index++;
+		idarrcheck[index] = idarr[id];
+		namearrcheck[index] = namearr[id];
+		pricearrcheck[index] = pricearr[id];
+		countarrcheck[index] = count;
+		totalpricearrcheck[index] = count * pricearr[id];
+		countarr[index] -= count;
+		totalsum += totalpricearrcheck[index];
+	}
+}
+
+void Checkarrappend()
+{
+	checksize++;
+	int* idarrchecktemp = new int[checksize];
+	std::string* namearrchecktemp = new std::string[checksize];
+	unsigned int* countarrchecktemp = new unsigned int[checksize];
+	double* pricearrchecktemp = new double[checksize];
+	double* totalpricearrchecktemp = new double[checksize];
+	Fillarr(idarrchecktemp, idarrcheck, checksize - 1);
+	Fillarr(namearrchecktemp, namearrcheck, checksize - 1);
+	Fillarr(countarrchecktemp, countarrcheck, checksize - 1);
+	Fillarr(pricearrchecktemp, pricearrcheck, checksize - 1);
+	Fillarr(totalpricearrchecktemp, totalpricearrcheck, checksize - 1);
+	std::swap(idarrchecktemp, idarrcheck);
+	std::swap(namearrchecktemp, namearrcheck);
+	std::swap(countarrchecktemp, countarrcheck);
+	std::swap(pricearrchecktemp, pricearrcheck);
+	std::swap(totalpricearrchecktemp, totalpricearrcheck);
+	delete[] idarrchecktemp; namearrchecktemp; countarrchecktemp; pricearrchecktemp; totalpricearrcheck;
+}
+
+void Printcheck(double& totalsum)
+{
+	std::cout << "№\t" << "ID\t" << std::left << std::setw(25) << "название\t\t" << "цена за штуку\t" << "\tкол-во" << "\tитог\n";
+	for (size_t i = 0; i < storagesize; i++)
+	{
+		std::cout << i + 1 << "\t" << idarrcheck[i] << "\t" << std::left << std::setw(25) << namearrcheck[i] << "\t" << countarrcheck[i] << "\t" << pricearrcheck[i] << "\n";
+	}
+	std::cout << "итого - " << totalsum;
+}
+
+void Storagereturn()
+{
+	for (size_t i = 0; i < checksize; i++)
+	{
+		countarr[idarrcheck[i] - 1] += countarrcheck[i];
+	}
+	delete[] idarrcheck; namearrcheck; countarrcheck; pricearrcheck; totalpricearrcheck;
+}
 
 void Setloginsymbols()
 {
@@ -468,6 +722,7 @@ void Addnewuser()
 			if (newlogin == "exit")
 			{
 				std::cout << "отмена";
+				exit = false;
 				Sleep(1500);
 				break;
 			}
@@ -478,6 +733,7 @@ void Addnewuser()
 			else
 			{
 				std::cout << "символы a-z A-Z 0-9";
+				Sleep(1500);
 			}
 		}
 		while (exit)
@@ -488,16 +744,18 @@ void Addnewuser()
 			if (newpass == "exit")
 			{
 				std::cout << "отмена";
+				exit = false;
 				Sleep(1500);
 				break;
 			}
-			if (Checklogin(newpass))
+			if (Checkpass(newpass))
 			{
 				break;
 			}
 			else
 			{
 				std::cout << "символы a-z A-Z 0-9, и спецсимволы";
+				Sleep(1500);
 			}
 		}
 		while (exit)
@@ -508,6 +766,7 @@ void Addnewuser()
 			if (choose == "exit")
 			{
 				std::cout << "отмена";
+				exit = false;
 				Sleep(1500);
 				break;
 			}
@@ -536,23 +795,35 @@ void Addnewuser()
 			if (choose == "1")
 			{
 				usize++;
+				if (newrole == userstatus[2])
+				{
+					staffcount++;
+				}
 				std::string* loginarrtemp = new std::string[usize];
 				std::string* passarrtemp = new std::string[usize];
 				std::string* rolearrtemp = new std::string[usize];
+				double* bonusarrtemp = new double[usize];
+				unsigned int* useridarrtemp = new unsigned int[usize];
 
 				Fillarr(loginarrtemp, loginarr, usize - 1);
 				Fillarr(passarrtemp, passwordarr, usize - 1);
 				Fillarr(rolearrtemp, statusarr, usize - 1);
+				Fillarr(bonusarrtemp, bonusarr, usize - 1);
+				Fillarr(useridarrtemp, useridarr, usize - 1);
 
 				loginarrtemp[usize - 1] = newlogin;
 				passarrtemp[usize - 1] = newpass;
 				rolearrtemp[usize - 1] = newrole;
+				bonusarrtemp[usize - 1] = 0.0;
+				useridarrtemp[usize - 1] = usize;
 
 				std::swap(loginarrtemp, loginarr);
 				std::swap(passarrtemp, passwordarr);
 				std::swap(rolearrtemp, statusarr);
+				std::swap(bonusarrtemp, bonusarr);
+				std::swap(useridarrtemp, useridarr);
 
-				delete[] loginarrtemp, passarrtemp, rolearrtemp;
+				delete[] loginarrtemp; passarrtemp; rolearrtemp; bonusarrtemp; useridarrtemp;
 
 				std::cout << "операция прошла успешно";
 				Sleep(1500);
@@ -597,7 +868,7 @@ bool Checklogin(const std::string& str)
 
 	for (size_t i = 0; i < usize; i++)
 	{
-		if (str == namearr[i])
+		if (str == loginarr[i])
 		{
 			std::cout << "уже есть";
 			Sleep(1500);
@@ -619,7 +890,7 @@ bool Checkpass(const std::string& str)
 	}
 	for (char sym : str)
 	{
-		if (!passsymbols.count(sym))
+		if (passsymbols.count(sym))
 		{
 			std::cout << "некоректный пароль";
 			Sleep(1500);
@@ -634,13 +905,13 @@ bool Checkpass(const std::string& str)
 			specsymcount++;
 		}
 	}
-	if (numcount > 3 && specsymcount > 3)
+	if (numcount > 2 && specsymcount > 2)
 	{
 		return true;
 	}
 	else
 	{
-		std::cout << "должно быть больше 3 спецсимволов и чисел";
+		std::cout << "должно быть больше 2 спецсимволов и чисел";
 		Sleep(1500);
 		return false;
 	}
@@ -712,10 +983,10 @@ int main()
 	Start();
 
 
-	delete[]loginarr, passwordarr, statusarr;
+	delete[]loginarr; passwordarr; statusarr; bonusarr; useridarr;
 	if (Createstorage)
 	{
-		delete[]idarr, namearr, pricearr;
+		delete[]idarr; namearr; pricearr;
 	}
 	return 0;
 }
@@ -1056,7 +1327,7 @@ void Deleteitem()
 					std::swap(countarr, countarrtemp);
 					std::swap(pricearr, pricearrtemp);
 
-					delete[] idarrtemp, namearrtemp, countarrtemp, pricearrtemp;
+					delete[] idarrtemp; namearrtemp; countarrtemp; pricearrtemp;
 					break;
 				}
 				else if (choose == "2")
@@ -1076,15 +1347,17 @@ void Showuser(int mode)
 	{
 		for (size_t i = 1; i < usize; i++)
 		{
-			std::cout << i << std::left << std::setw(12) << loginarr[i] << "\t\t" << passwordarr[i] << "\t\t\t" << statusarr[i];
+			std::cout << i << "\t" << std::left << std::setw(12) << loginarr[i] << "\t\t" << passwordarr[i] << "\t\t\t" << statusarr[i] << "\n";
 		}
+		system("pause");
 	}
 	else if (mode == 1)
 	{
 		for (size_t i = 0; i < usize; i++)
 		{
-			std::cout << i << std::left << std::setw(12) << loginarr[i] << "\t\t" << passwordarr[i] << "\t\t\t" << statusarr[i];
+			std::cout << i << "\t" << std::left << std::setw(12) << loginarr[i] << "\t\t" << passwordarr[i] << "\t\t\t" << statusarr[i] << "\n";
 		}
+		system("pause");
 	}
 }
 void Changeuser()
@@ -1115,6 +1388,10 @@ void Changeuser()
 		else if (choose == "3" && usize > 1)
 		{
 			Changepass();
+		}
+		else if (choose == "4" && usize > 1)
+		{
+			Deleteuser();
 		}
 		else if (choose == "0")
 		{
