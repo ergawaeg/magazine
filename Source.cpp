@@ -26,7 +26,7 @@ double* pricearrcheck;
 double* totalpricearrcheck;
 double cashincome = 0.0;
 double bankincome = 0.0;
-double cash = 3000 + rand() % 7500;
+double cash = 5000 + rand() % 7500;
 void Selling();
 void Checkarrappend();
 void Printcheck(double& totalsum);
@@ -38,7 +38,9 @@ std::unordered_set<char> passsymbols;
 void Setloginsymbols();
 void Setpasssymbols();
 void Changepass();
+void Showincome();
 void Addnewuser();
+bool Logout();
 bool isloginsetcreate = false;
 bool ispasssetcreate = false;
 bool Checklogin(const std::string& str);
@@ -185,7 +187,7 @@ void Sadminmenu()
 		}
 		else if (choose == "8" && storagesize > 0)
 		{
-
+			Showincome();
 		}
 		else
 		{
@@ -479,7 +481,35 @@ void Selling()
 					Getline(choose);
 					if (choose == "1")
 					{
-						//////////////////////////////////////////////////
+						std::cout << "к оплате " << totalsum << "\n\n";
+						std::cout << "введите кол-во нал. ";
+						Getline(choosemoney);
+						if (Isnumber(choosemoney))
+						{
+							money = std::stod(choosemoney);
+							if (money < totalsum)
+							{
+								std::cout << "ты бомж";
+								Sleep(1500);
+								continue;
+							}
+							else if (money - totalsum > cash)
+							{
+								std::cout << "я бомж";
+								Sleep(1500);
+								continue;
+							}
+							else
+							{
+								std::cout << "оплата прошла успешно\n" << "сдача - " << money - totalsum << " рублей\n";
+								Sleep(1500);
+								cash += totalsum;
+								cashincome += totalsum;
+								bonusarr[currentid] += totalsum;
+								system("cls");
+								break;
+							}
+						}
 					}
 					else if (choose == "2")
 					{
@@ -490,8 +520,24 @@ void Selling()
 						bankincome += totalsum;
 						bonusarr[currentid] = totalsum;
 					}
+					else if (choose == "ok")
+					{
+						std::cout << "ok";
+						Sleep(1500);
+						system("cls");
+						break;
+					}
+					else
+					{
+						Err();
+						continue;
+					}
 				}
 				delete[] idarrcheck; namearrcheck; countarrcheck; pricearrcheck; totalpricearrcheck;
+
+				idarrcheck = nullptr; namearrcheck = nullptr; countarrcheck = nullptr; pricearrcheck = nullptr; totalpricearrcheck = nullptr;
+
+				checksize = 0;
 			}
 			else if (choose == "2")
 			{
@@ -601,6 +647,10 @@ void Storagereturn()
 		countarr[idarrcheck[i] - 1] += countarrcheck[i];
 	}
 	delete[] idarrcheck; namearrcheck; countarrcheck; pricearrcheck; totalpricearrcheck;
+
+	idarrcheck = nullptr; namearrcheck = nullptr; countarrcheck = nullptr; pricearrcheck = nullptr; totalpricearrcheck = nullptr;
+
+	checksize = 0;
 }
 
 void Setloginsymbols()
@@ -706,6 +756,17 @@ void Changepass()
 			}
 		}
 	}
+}
+
+void Showincome()
+{
+	system("cls");
+	std::cout << "налом " << cashincome << "\n";
+	std::cout << "без налом " << bankincome << "\n";
+	std::cout << "Итого " << bankincome + cashincome << "\n\n";
+	std::cout << "сумма ваших продаж " << bonusarr[currentid] << "\n\n";
+	system("pause");
+	system("cls");
 }
 
 void Addnewuser()
@@ -847,6 +908,30 @@ void Addnewuser()
 	}
 }
 
+bool Logout()
+{
+	system("cls");
+	while (true)
+	{
+		std::cout << "введите пароль/exit\n";
+		Getline(choose);
+		if (choose == "exit")
+		{
+			system("cls");
+			return false;
+		}
+		else if (choose == passwordarr[currentid - 1] || choose == passwordarr[0])
+		{
+			system("cls");
+			return true;
+		}
+		else
+		{
+			Err();
+		}
+	}
+}
+
 bool Checklogin(const std::string& str)
 {
 	if (str.size() < 4 || str.size() > 20)
@@ -974,7 +1059,6 @@ inline void Err(int time)
 	Sleep(time);
 	system("cls");
 }
-//
 
 int main()
 {
