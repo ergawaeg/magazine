@@ -40,6 +40,8 @@ void Setpasssymbols();
 void Changepass();
 void Showincome();
 void Addnewuser();
+void Showadminmenu();
+void Showusermenu();
 bool Logout();
 bool isloginsetcreate = false;
 bool ispasssetcreate = false;
@@ -188,6 +190,13 @@ void Sadminmenu()
 		else if (choose == "8" && storagesize > 0)
 		{
 			Showincome();
+		}
+		else if (choose == "0")
+		{
+			if (Logout())
+			{
+				break;
+			}
 		}
 		else
 		{
@@ -908,6 +917,119 @@ void Addnewuser()
 	}
 }
 
+void Showadminmenu()
+{
+	while (true)
+	{
+
+		std::cout << "1 - начать продажу\n";
+		std::cout << "2 - показать склад\n";
+		std::cout << "3 - пополнить склад\n";
+		std::cout << "4 - списать товар\n";
+		std::cout << "5 - редактировать склад\n";
+		std::cout << "6 - редактировать персонал\n";
+		std::cout << "7 - отчет о прибыли\n";
+		std::cout << "0 - закрыть смену\n";
+		std::cout << "Вывод\n";
+		Getline(choose);
+		system("cls");
+		if (choose == "1" && storagesize > 0)
+		{
+			Selling();
+		}
+		else if (choose == "2" && storagesize > 0)
+		{
+			Showstorage();
+			system("pause");
+			system("cls");
+		}
+		else if (choose == "3" && storagesize > 0)
+		{
+			Addstorage();
+		}
+		else if (choose == "4" && storagesize > 0)
+		{
+			Removestorage();
+		}
+		else if (choose == "5" && storagesize > 0)
+		{
+			Changestorage();
+		}
+		else if (choose == "6" && storagesize > 0)
+		{
+			Changeuser();
+		}
+		else if (choose == "7" && storagesize > 0)
+		{
+			Showincome();
+		}
+		else if (choose == "0")
+		{
+			if (Logout())
+			{
+				break;
+			}
+		}
+		else
+		{
+			if (storagesize < 1)
+			{
+				std::cout << "склад пуст\n";
+			}
+			Err();
+		}
+	}
+}
+
+void Showusermenu()
+{
+	while (true)
+	{
+
+		std::cout << "1 - начать продажу\n";
+		std::cout << "2 - показать склад\n";
+		std::cout << "3 - пополнить склад\n";
+		std::cout << "4 - отчет о прибыли\n";
+		std::cout << "0 - закрыть смену\n";
+		std::cout << "Вывод\n";
+		Getline(choose);
+		system("cls");
+		if (choose == "1" && storagesize > 0)
+		{
+			Selling();
+		}
+		else if (choose == "2" && storagesize > 0)
+		{
+			Showstorage();
+			system("pause");
+			system("cls");
+		}
+		else if (choose == "3" && storagesize > 0)
+		{
+			Addstorage();
+		}
+		else if (choose == "4" && storagesize > 0)
+		{
+			Showincome();
+		}
+		else if (choose == "0")
+		{
+			if (Logout())
+			{
+				break;
+			}
+		}
+		else
+		{
+			if (storagesize < 1)
+			{
+				std::cout << "склад пуст\n";
+			}
+			Err();
+		}
+	}
+}
+
 bool Logout()
 {
 	system("cls");
@@ -1004,50 +1126,76 @@ bool Checkpass(const std::string& str)
 
 void Start()
 {
-	if (Login())
+	while (true)
 	{
-		if (currentstatus == userstatus[0])
+		if (Login())
 		{
-			while (true)
+			if (currentstatus == userstatus[0])
 			{
-				std::cout << "выберете склад\n1 - готовый\n2 - создать новый\n";
+				while (true)
+				{
+					std::cout << "выберете склад\n1 - готовый\n2 - создать новый\n";
+					Getline(choose);
+					if (choose == "1")
+					{
+						if (isstoragecreated == false)
+						{
+							Createstorage();
+						}
+						system("cls");
+						Sadminmenu();
+						break;
+					}
+					else if (choose == "2")
+					{
+						if (isstoragecreated == false)
+						{
+
+						}
+						system("cls");
+						Sadminmenu();
+						break;
+					}
+					else
+					{
+						Err();
+					}
+				}
+			}
+			else if (currentstatus == userstatus[1])
+			{
+				if (isstoragecreated == false)
+				{
+					Createstorage();
+				}
+				system("cls");
+				Showadminmenu();
+			}
+			else if (currentstatus == userstatus[2])
+			{
+				if (isstoragecreated == false)
+				{
+					Createstorage();
+				}
+				system("cls");
+				Showusermenu();
+			}
+			else
+			{
+				system("cls");
+				std::cout << "пароль супер админа/exit  ";
 				Getline(choose);
-				if (choose == "1")
+				if (choose == passwordarr[0])
 				{
-					if (isstoragecreated == false)
-					{
-						Createstorage();
-					}
 					system("cls");
-					Sadminmenu();
+					std::cout << "\nзавершение работы";
+					Sleep(1500);
+					break;
 				}
-				else if (choose == "2")
+				else if (choose == "exit")
 				{
-					if (isstoragecreated == false)
-					{
-						
-					}
-					system("cls");
-					Sadminmenu();
+					continue;
 				}
-				else
-				{
-					Err();
-				}
-			}
-		}
-		else if (currentstatus == userstatus[1])
-		{
-			if (isstoragecreated == false)
-			{
-				Createstorage();
-			}
-		}
-		else if (currentstatus == userstatus[2])
-		{
-			if (isstoragecreated == false)
-			{
-				Createstorage();
 			}
 		}
 	}
