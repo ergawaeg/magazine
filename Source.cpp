@@ -20,6 +20,7 @@ void Changeuser();
 //продажи
 size_t checksize = 0;
 int* idarrcheck;
+int index = -1;
 std::string* namearrcheck;
 unsigned int* countarrcheck;
 double* pricearrcheck;
@@ -465,11 +466,10 @@ void Selling()
 {
 	bool isfirst = true;
 	unsigned id = 0, count = 0;
-	int index = -1;
 	double money = 0.0, totalsum = 0.0;
 	while (true)
 	{
-		Showstorage();
+		Showstorage(4);
 		std::cout << "введите номер товара/exit для перехода к оплате\n";
 		Getline(choose);
 		if (choose == "exit")
@@ -590,7 +590,7 @@ void Selling()
 		}
 		if (Isnumber(choose))
 		{
-			id = std::stoi(choose);
+			count = std::stoi(choose);
 			if (count < 1 || count > countarr[id])
 			{
 				std::cout << "ошибка";
@@ -603,9 +603,9 @@ void Selling()
 			continue;
 		}
 		Checkarrappend();
-		if (!isfirst)
+		if (isfirst)
 		{
-			isfirst = true;
+			isfirst = false;
 		}
 		index++;
 		idarrcheck[index] = idarr[id];
@@ -614,6 +614,27 @@ void Selling()
 		countarrcheck[index] = count;
 		totalpricearrcheck[index] = count * pricearr[id];
 		countarr[index] -= count;
+		if (id == 3)
+		{
+			totalpricearrcheck[index] / 2;
+		}
+		else if (id == 5)
+		{
+			if (count % 2 == 0)
+			{
+				count /= 2;
+				totalpricearrcheck[index] -= count * pricearr[id];
+			}
+			else
+			{
+				if (count > 1)
+				{
+					count--;
+					count /= 2;
+					totalpricearrcheck[index] -= count * pricearr[id];
+				}
+			}
+		}
 		totalsum += totalpricearrcheck[index];
 	}
 }
@@ -642,9 +663,9 @@ void Checkarrappend()
 void Printcheck(double& totalsum)
 {
 	std::cout << "№\t" << "ID\t" << std::left << std::setw(25) << "название\t\t" << "цена за штуку\t" << "\tкол-во" << "\tитог\n";
-	for (size_t i = 0; i < storagesize; i++)
+	for (size_t i = 0; i < index + 1; i++)
 	{
-		std::cout << i + 1 << "\t" << idarrcheck[i] << "\t" << std::left << std::setw(25) << namearrcheck[i] << "\t" << countarrcheck[i] << "\t" << pricearrcheck[i] << "\n";
+		std::cout << i + 1 << "\t" << idarrcheck[i] << "\t" << std::left << std::setw(25) << namearrcheck[i] << "\t" << countarrcheck[i] << "\t" << pricearrcheck[i] << "\t";
 	}
 	std::cout << "итого - " << totalsum;
 }
@@ -1254,6 +1275,24 @@ void Showstorage(int mode)
 		for (size_t i = 0; i < storagesize; i++)
 		{
 			std::cout << idarr[i] << "\t" << std::left << "\t" << std::setw(25) << namearr[i] << "\n";
+		}
+	}
+	else if (mode == 4)
+	{
+		std::cout << "ID\t" << std::left << std::setw(25) << "\tназвание\t" << "кол-во\t" << "цена\n";
+		for (size_t i = 0; i < storagesize; i++)
+		{
+			if (i == 3)
+			{
+				std::cout << idarr[i] << "\t" << std::left << "\t" << std::setw(25) << namearr[i] << "\t" << countarr[i] << "\t" << pricearr[i] / 2 << "\t скидка 50%" << "\n";
+				i++;
+			}
+			if (i == 5)
+			{
+				std::cout << idarr[i] << "\t" << std::left << "\t" << std::setw(25) << namearr[i] << "\t" << countarr[i] << "\t" << pricearr[i] << "\t два по цене одного" << "\n";
+				i++;
+			}
+			std::cout << idarr[i] << "\t" << std::left << "\t" << std::setw(25) << namearr[i] << "\t" << countarr[i] << "\t" << pricearr[i] << "\n";
 		}
 	}
 }
